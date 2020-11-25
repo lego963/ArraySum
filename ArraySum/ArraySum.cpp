@@ -10,38 +10,43 @@
 
 using namespace std;
 
-const int COUNT = 1000;
-const int MAX_NTHREAD = 4;
+const int LENGTH = 100000;
+const int MAX_NTHREAD = 5;
 
 mutex Mutex;
 
 void init_array(int arr[])
 {
 	srand(GetTickCount64());
-	for (int i = 0; i < COUNT; i++)
+	for (int i = 0; i < LENGTH; i++)
 		arr[i] = rand() % 100;
 }
 
-int sum_nonparallel(int arr[])
+int count_nonparallel(int arr[])
 {
 	int s = 0;
-	for (int i = 0; i < COUNT; i++)
+	for (int i = 0; i < LENGTH; i++)
 		if (i % 3 == 0)
-			s += arr[i];
+			s += 1;
 	return s;
 }
 
-void sum(int arr[], int start, int finish, int& global_sum)
+void count_elems(int arr[], unsigned int start, unsigned int finish, int& gloabal_counter)
 {
+	int local_couner = 0;
 	for (int i = start; i < finish; i++)
 		if (i % 3 == 0)
-			global_sum += arr[i]; // результат передаётся по адресу
+			local_couner += 1; // результат передаётся по адресу
+	gloabal_counter += local_couner;
+
+	lock_guard<std::mutex> lock(Mutex);
+	cout << this_thread::get_id() << ": " << gloabal_counter << endl;
 }
 
-int sum_parallel(int arr[])
+int count_parallel(int arr[])
 {
 	thread t[MAX_NTHREAD]; // создание объектов потоков
-	int n = COUNT / MAX_NTHREAD; // вспомогательная переменная для определения границ потоков
+	unsigned int n = LENGTH / MAX_NTHREAD; // вспомогательная переменная для определения границ потоков
 
 	int global_sum = 0;
 
@@ -50,9 +55,9 @@ int sum_parallel(int arr[])
 	{
 		if (i == MAX_NTHREAD - 1)
 			//конструкторы потоков
-			t[i] = thread(sum, arr, n * i, COUNT, ref(global_sum));
+			t[i] = thread(count_elems, arr, n * i, LENGTH, ref(global_sum));
 		else
-			t[i] = thread(sum, arr, n * i, n * (i + 1), ref(global_sum));
+			t[i] = thread(count_elems, arr, n * i, n * (i + 1), ref(global_sum));
 	}
 	//ожидание завершения работы потоков
 	for (int i = 0; i < MAX_NTHREAD; i++)
@@ -63,10 +68,10 @@ int sum_parallel(int arr[])
 
 int main()
 {
-	int a[COUNT];
+	int a[LENGTH];
 	init_array(a);
-	cout << "sum nonparallel = " << sum_nonparallel(a) << endl;
-	cout << "sum parallel = " << sum_parallel(a) << endl;
+	cout << "count nonparallel = " << count_nonparallel(a) << endl;
+	cout << "count parallel    = " << count_parallel(a) << endl;
 
 	cin.ignore();
 	return 0;
