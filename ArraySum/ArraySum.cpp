@@ -105,6 +105,36 @@ int count_parallel(int arr[])
 //	return global_sum;
 //}
 
+//double countOverThreads(int arr[])
+//{
+//	unsigned int const count_threads = 32;
+//
+//	unsigned int block_size = LENGTH / count_threads; // вспомогательная переменная для определения границ потоков
+//	auto start = chrono::high_resolution_clock::now();
+//	int global_sum = 0;
+//	vector<thread> threads(count_threads - 1);
+//
+//	// создание потоков, согласно границам
+//	for (int i = 0; i < count_threads - 1; i++)
+//	{
+//		//конструкторы потоков
+//		threads[i] = thread(count_elems, arr, block_size * i, block_size * (i + 1), ref(global_sum));
+//	}
+//
+//	// обработка последнего участка
+//	count_elems(arr, block_size * (count_threads - 1), LENGTH, global_sum);
+//
+//	//ожидание завершения работы потоков
+//	for (int i = 0; i < count_threads - 1; i++)
+//		threads[i].join();
+//
+//	auto end = chrono::high_resolution_clock::now();
+//	chrono::duration<float> duration = end - start;
+//	cout << "Time: " << duration.count() << " sec\n";
+//
+//	return global_sum; //возвращаем результат
+//}
+
 int main()
 {
 	int a[LENGTH];
