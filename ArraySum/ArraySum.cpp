@@ -53,7 +53,6 @@ void parallelCount(int arrayOfNumerics[])
 			for (j = 0; j < LENGTH; j++)
 			{
 				if (arrayOfNumerics[j] % 3 == 0)
-#pragma omp atomic
 					counter++;
 			}
 			auto end = omp_get_wtime();
