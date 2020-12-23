@@ -56,7 +56,6 @@ void parallelCount(int arrayOfNumerics[])
 		}
 #pragma omp critical
 		total += counter;
-		cout << "COUNT DYNAMIC PARALLEL: " << counter << endl;
 	}
 	cout << "COUNT DYNAMIC PARALLEL: " << total << endl;
 
