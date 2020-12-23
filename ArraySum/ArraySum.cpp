@@ -7,7 +7,7 @@
 
 using namespace std;
 
-const int LENGTH = 100000;
+const int LENGTH = 12000;
 
 void init_array(int arrayOfNumerics[])
 {
@@ -38,32 +38,30 @@ void parallelCount(int arrayOfNumerics[])
 	unsigned int const need_threads = (LENGTH + block_size - 1) / block_size;
 
 	unsigned int const hardware_threads = omp_get_max_threads();
-	unsigned int const count_threads = min(hardware_threads != 0 ? hardware_threads : 2, need_threads);
+	unsigned int count_threads = min(hardware_threads != 0 ? hardware_threads : 2, need_threads);
 
 	auto start = omp_get_wtime();
-	int i, j, counter = 0;
+	int i, j, counter = 0, total = 0;
 	double duration = 0;
+
 	omp_set_num_threads(count_threads);
-#pragma omp parallel shared(arrayOfNumerics) private(i,j, counter) 
+#pragma omp parallel for shared(arrayOfNumerics, block_size) private(i,j, counter)
+	for (i = 0; i < count_threads; i++)
 	{
-#pragma omp for
-		for (i = 0; i < 1; i++)
+		counter = 0;
+		for (j = block_size * i; j < block_size * (i + 1); j++)
 		{
-			counter = 0;
-			for (j = 0; j < LENGTH; j++)
-			{
-				if (arrayOfNumerics[j] % 3 == 0)
-					counter++;
-			}
-			auto end = omp_get_wtime();
-			duration = end - start;
-
-			printf("TIME: %.8f sec\n", duration);
-
-			cout << "COUNT DYNAMIC PARALLEL: " << counter << endl;
+			if (arrayOfNumerics[j] % 3 == 0)
+				counter++;
 		}
+#pragma omp critical
+		total += counter;
+		cout << "COUNT DYNAMIC PARALLEL: " << counter << endl;
 	}
+	cout << "COUNT DYNAMIC PARALLEL: " << total << endl;
+
 }
+
 
 
 int main()
